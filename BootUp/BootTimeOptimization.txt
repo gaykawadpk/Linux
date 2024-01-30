@@ -1,0 +1,31 @@
+Boot time optimization:
+-----------------------------------------
+1. Analyzing boot up time:
+We can use the systemd-analyze command to understand the system’s boot time 
+overview and pinpoint specific services causing delays.
+
+systemd-analyze gives the startup time of kernel and each services running on system.
+
+systemd-analyze plot > bootchart.svg give plot of system startup.
+
+2. Optimizing kernel boot time:
+We can optimizing kernel boot up, by disabling unnecessary kernel modules.
+
+3. Disable unnecessary services:
+We can list down the services which we are not using from boot chart and remove/disable
+them from our rfs.
+
+4. Optimizing individual services startup:
+We can look into bootchart to list down which services are taking longer to boot and 
+then analyze those services individually to see why their startup is taking time and 
+if we can optimiz their code.
+
+5. Using default linux provided configuration for mounting devices and configuring network,
+rather than using bash script for that.
+
+6. Correcting dependencies of the services. Sometimes, wrong dependecies can create some 
+issues while starting individual services. So, make sure we are setting up dependencies 
+correctly.
+
+7. Rearranging startup sequence to bring necessary services before. We can find out the
+services which we can start at later stage and move them towards end of boot up process.

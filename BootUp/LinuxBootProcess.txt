@@ -1,0 +1,43 @@
+Linux Boot Process:
+
+1. Power On - When a Linux system is powered up or reset, its processor executes a 
+specific firmware/program for system initialization, such as Power-on self-test, at 
+a known address in flash/ROM. That firmware is called BIOS.
+
+2. BIOS -  BIOS (Basic Input/Output System) is stored in the mainboard. In embedded 
+Linux system, this firmware/program is called boot ROM. BIOS contains all the code 
+to gain initial access to the main machine devices such as Keyboard, Monitor, 
+Disk drives, Serial devices. BIOS perfomrs Power-on self test.Finally, if the 
+system passes the POST, the BIOS/UEFI selects a boot device depending on the 
+system configuration.
+
+3. Boot loader - After being loaded into RAM, bootloader (also called first-stage bootloader or 
+primary bootloader) will execute to load the second-stage bootloader (also called secondary 
+bootloader).
+
+4. BL2 - The second-stage bootloader locates and load a Linux kernel into 
+RAM and turn control of the computer over to the kernel. The kernel and its 
+associated files are located in the /boot directory. 
+Second-stage bootloader also performs several operation on the system such 
+as system hardware check, mounting the root device, loading the necessary 
+kernel modules.
+
+5. Kernel - All of the kernels are in a self-extracting, compressed format 
+to save space. The kernels are located in the /boot directory, along with an 
+initial RAM disk image, and device maps of the hard drives.
+
+After the selected kernel is loaded into memory and begins executing, it must 
+first extract itself from the compressed version of the file before it can 
+perform any useful work. Once the kernel has extracted itself, it loads 
+systemd, which is the replacement for the old SysV init program, and turns 
+control over to it.
+
+This is the end of the boot process. At this point, the Linux kernel and s
+ystemd are running but unable to perform any productive tasks for the end user 
+because nothing else is running.
+
+6. The startup process - The startup process follows the boot process and 
+brings the Linux computer up to an operational state in which it is usable 
+for productive work.
+
+

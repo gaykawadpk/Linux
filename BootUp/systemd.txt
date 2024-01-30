@@ -1,0 +1,167 @@
+systemd
+======================================================
+- systemd is a suite of basic building blocks for a Linux system. 
+
+- It provides a system and service manager that runs as PID 1 and starts 
+the rest of the system. 
+
+- systemd provides aggressive parallelization capabilities.
+
+- It uses socket and D-Bus activation for starting services, offers on-demand 
+starting of daemons.
+
+- It keeps track of processes using Linux control groups, maintains 
+mount and automount points, and implements an elaborate transactional 
+dependency-based service control logic. 
+
+- systemd supports SysV and LSB init scripts and works as a replacement 
+for sysvinit. 
+
+- Other parts of systemd include a logging daemon, utilities to control basic 
+system configuration like the hostname, date, locale, maintain a list of logged-in 
+users and running containers and virtual machines, system accounts, runtime 
+directories and settings, and daemons to manage simple network configuration, 
+network time synchronization, log forwarding, and name resolution.
+
+
+systemd Targets
+============================================
+A systemd target represents a Linux system's current or desired run state. 
+Much like SystemV start scripts, targets define the services that must be 
+present for the system to run and be active in that state. 
+
+Each target has a set of dependencies described in its configuration file. 
+systemd starts the required dependencies, which are the services required 
+to run the Linux host at a specific level of functionality. When all of the 
+dependencies listed in the target configuration files are loaded and running, 
+the system is running at that target level. 
+
+To see all of the targets available on system run:
+systemctl --type=target
+
+Comparison of SystemV runlevels with systemd targets and target aliases: 
+-----------------------------------------------------------------------------------------------
+systemd targets		SystemV		target aliases		Description
+					runlevel
+-----------------------------------------------------------------------------------------------
+default.target	 	 								This target is always aliased 
+													with a symbolic link to either 
+													multi-user.target or graphical.target. 
+													systemd always uses the default.target 
+													to start the system. 
+													The default.target should never 
+													be aliased to halt.target, 
+													poweroff.target, or reboot.target.
+													
+-----------------------------------------------------------------------------------------------
+graphical.target		5		runlevel5.target	Multi-user.target with a GUI
+
+-----------------------------------------------------------------------------------------------
+						4		runlevel4.target	Unused. Runlevel 4 was identical to 
+													runlevel 3 in the SystemV world. 
+													This target could be created and 
+													customized to start local services 
+													without changing the default 
+													multi-user.target.
+													
+-----------------------------------------------------------------------------------------------
+multi-user.target		3	runlevel3.target		All services running, but command-line 
+													interface (CLI) only.
+													
+-----------------------------------------------------------------------------------------------
+						2	runlevel2.target		Multi-user, without NFS, but all other 
+													non-GUI services running.
+													
+-----------------------------------------------------------------------------------------------
+rescue.target			1	runlevel1.target		A basic system, including mounting the 
+													filesystems with only the most basic 
+													services running and a rescue shell 
+													on the main console.
+-----------------------------------------------------------------------------------------------
+emergency.target		S	 						Single-user mode—no services are 
+													running; filesystems are not mounted. 
+													This is the most basic level of 
+													operation with only an emergency 
+													shell running on the main console 
+													for the user to interact with the system.
+													
+-----------------------------------------------------------------------------------------------
+halt.target	 	 									Halts the system without powering
+													it down.
+													
+-----------------------------------------------------------------------------------------------
+reboot.target			6		runlevel6.target	Reboot
+
+-----------------------------------------------------------------------------------------------
+poweroff.target			0		runlevel0.target	Halts the system and turns 
+													the power off
+
+
+
+systemd units:
+===============================
+Units commonly include, but are not limited to, services (.service), 
+mount points (.mount), devices (.device) and sockets (.socket).
+
+
+System start up using systemd:
+--------------------------------------
+Unless otherwise changed at boot time in the GRUB menu, systemd always starts the 
+default.target. The default.target file is a symbolic link to the true target file. 
+For a desktop workstation, this is typically going to be the graphical.target, which 
+is equivalent to runlevel 5 in SystemV. For a server, the default is more likely 
+to be the multi-user.target, which is like runlevel 3 in SystemV. The emergency.target 
+file is similar to single-user mode. Targets and services are systemd units.
+
+In systemd based Linux startup system, once the kernel gives control to startup system,
+i.e. /sbin/init. systemd first starts itself as PID1. systemd is the mother of all 
+processes and it is responsible for bringing the Linux host up to a state in which 
+productive work can be done. 
+
+The systemd startup map: - 
+
+local-fs-pre.target
+            |
+            v
+   (various mounts and   (various swap   (various cryptsetup
+    fsck services...)     devices...)        devices...)       (various low-level   (various low-level
+            |                  |                  |             services: udevd,     API VFS mounts:
+            v                  v                  v             tmpfiles, random     mqueue, configfs,
+     local-fs.target      swap.target     cryptsetup.target    seed, sysctl, ...)      debugfs, ...)
+            |                  |                  |                    |                    |
+            \__________________|_________________ | ___________________|____________________/
+                                                 \|/
+                                                  v
+                                           sysinit.target
+                                                  |
+             ____________________________________/|\________________________________________
+            /                  |                  |                    |                    \
+            |                  |                  |                    |                    |
+            v                  v                  |                    v                    v
+        (various           (various               |                (various          rescue.service
+       timers...)          paths...)              |               sockets...)               |
+            |                  |                  |                    |                    v
+            v                  v                  |                    v              rescue.target
+      timers.target      paths.target             |             sockets.target
+            |                  |                  |                    |
+            v                  \_________________ | ___________________/
+                                                 \|/
+                                                  v
+                                            basic.target
+                                                  |
+             ____________________________________/|                                 emergency.service
+            /                  |                  |                                         |
+            |                  |                  |                                         v
+            v                  v                  v                                 emergency.target
+        display-        (various system    (various system
+    manager.service         services           services)
+            |             required for            |
+            |            graphical UIs)           v
+            |                  |           multi-user.target
+            |                  |                  |
+            \_________________ | _________________/
+                              \|/
+                               v
+                     graphical.target
+					 
+					 
